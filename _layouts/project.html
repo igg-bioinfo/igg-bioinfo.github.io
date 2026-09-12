@@ -1,0 +1,77 @@
+---
+layout: default
+---
+
+<div class="page-hero page-hero--project">
+  <div class="container">
+    <a href="{{ '/#projects' | relative_url }}" class="back-link">← Projects</a>
+    <div class="project-profile">
+      <div class="project-profile__meta">
+        <span class="project-status project-status--{{ page.status | default: 'active' }}">{{ page.status | default: "active" }}</span>
+        {% for tag in page.tags %}<span class="tag">{{ tag }}</span>{% endfor %}
+      </div>
+      <h1>{{ page.title }}</h1>
+      <p class="project-tagline">{{ page.short_description }}</p>
+      <div class="project-links">
+        {% if page.github %}<a href="{{ page.github }}" target="_blank" rel="noopener" class="btn-primary">⌥ View on GitHub</a>{% endif %}
+        {% if page.paper_doi %}<a href="https://doi.org/{{ page.paper_doi }}" target="_blank" rel="noopener" class="btn-secondary">Paper ↗</a>{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="container project-body">
+
+    <div class="project-main prose">
+      {{ content }}
+    </div>
+
+    <aside class="project-sidebar">
+      {% if page.team %}
+      <div class="sidebar-block">
+        <h3>Team</h3>
+        <ul>
+          {% for member_slug in page.team %}
+            {% assign member = site.members | where: "slug", member_slug | first %}
+            {% if member %}
+            <li><a href="{{ member.url | relative_url }}">{{ member.name }}</a></li>
+            {% else %}
+            <li>{{ member_slug }}</li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      {% if page.funding %}
+      <div class="sidebar-block">
+        <h3>Funding</h3>
+        <ul>{% for f in page.funding %}<li>{{ f }}</li>{% endfor %}</ul>
+      </div>
+      {% endif %}
+
+      {% if page.start_date %}
+      <div class="sidebar-block">
+        <h3>Period</h3>
+        <p>{{ page.start_date }}{% if page.end_date %} – {{ page.end_date }}{% else %} – ongoing{% endif %}</p>
+      </div>
+      {% endif %}
+
+      {% if page.publications %}
+      <div class="sidebar-block">
+        <h3>Publications</h3>
+        <ul class="pub-simple">
+          {% for pub in page.publications %}
+          <li>
+            <span class="pub-title">{{ pub.title }}</span>
+            {% if pub.doi %}<a href="https://doi.org/{{ pub.doi }}" target="_blank" rel="noopener">DOI</a>{% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </aside>
+
+  </div>
+</div>

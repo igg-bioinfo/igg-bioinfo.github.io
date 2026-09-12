@@ -1,0 +1,177 @@
+---
+layout: default
+---
+
+<!-- HERO -->
+<header class="hero">
+  <canvas id="dnaCanvas"></canvas>
+  <div class="hero-content">
+    <p class="hero-eyebrow">{{ site.institution }} · {{ site.location }}</p>
+    <h1>IGG Bioinfo<br/>Lab</h1>
+    <p class="hero-sub">{{ site.description }}</p>
+    <div class="hero-tags">
+      <span>Bioinformatics</span>
+      <span>Genomics</span>
+      <span>Epigenomics</span>
+    </div>
+    <a href="#research" class="btn-primary">Explore our work</a>
+  </div>
+  <div class="hero-scroll">↓</div>
+</header>
+
+<!-- RESEARCH -->
+<section id="research" class="section">
+  <div class="container">
+    <h2 class="section-title">Research</h2>
+    <p class="section-intro">Our work spans the intersection of computation and biology, with a focus on pediatric diseases and rare genetic conditions.</p>
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-icon">🧬</div>
+        <h3>Genomics</h3>
+        <p>Whole-genome and exome sequencing analysis pipelines for variant calling, annotation, and interpretation in rare disease contexts.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔬</div>
+        <h3>Epigenomics</h3>
+        <p>Chromatin accessibility, histone modifications, and DNA methylation profiling to decode gene regulation and cell identity.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💻</div>
+        <h3>Tool Development</h3>
+        <p>Open-source pipelines and software for reproducible bioinformatic analyses, made available to the community via GitHub.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏥</div>
+        <h3>Translational Research</h3>
+        <p>Bridging computational findings to clinical applications at Gaslini, one of Italy's leading pediatric hospitals.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM — auto-generated from _members/ -->
+<section id="team" class="section section-alt">
+  <div class="container">
+    <h2 class="section-title">Team</h2>
+    <p class="section-intro">A multidisciplinary group of bioinformaticians, biologists, and data scientists.</p>
+    <div class="team-grid">
+      {% assign sorted_members = site.members | sort: "order" %}
+      {% for member in sorted_members %}
+      <a class="member member-link" href="{{ member.url | relative_url }}">
+        <div class="member-avatar">
+          {% if member.avatar %}
+            <img src="{{ member.avatar | relative_url }}" alt="{{ member.name }}" />
+          {% else %}
+            {{ member.name | split: " " | map: "first" | join: "" | slice: 0 }}{{ member.name | split: " " | last | slice: 0 }}
+          {% endif %}
+        </div>
+        <div class="member-info">
+          <h4>{{ member.name }}</h4>
+          <p class="member-role">{{ member.role }}</p>
+          <p class="member-bio">{{ member.short_bio | default: member.content | strip_html | truncatewords: 20 }}</p>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    <p class="team-note">We are always looking for motivated students and researchers. <a href="#contact">Get in touch.</a></p>
+  </div>
+</section>
+
+<!-- PROJECTS — auto-generated from _projects/ -->
+<section id="projects" class="section">
+  <div class="container">
+    <h2 class="section-title">Projects</h2>
+    <p class="section-intro">Active research projects and computational tools developed by the lab.</p>
+    <div class="projects-grid">
+      {% assign active_projects = site.projects | where: "status", "active" %}
+      {% assign other_projects  = site.projects | where_exp: "p", "p.status != 'active'" %}
+      {% assign all_projects = active_projects | concat: other_projects %}
+      {% for project in all_projects %}
+      <a class="project-card" href="{{ project.url | relative_url }}">
+        <div class="project-header">
+          <span class="project-status project-status--{{ project.status | default: 'active' }}">
+            {{ project.status | default: "active" }}
+          </span>
+          {% if project.github %}
+          <span class="project-gh">⌥ GitHub</span>
+          {% endif %}
+        </div>
+        <h3>{{ project.title }}</h3>
+        <p>{{ project.short_description | default: project.content | strip_html | truncatewords: 25 }}</p>
+        <div class="project-tags">
+          {% for tag in project.tags limit:4 %}
+          <span>{{ tag }}</span>
+          {% endfor %}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- PUBLICATIONS -->
+<section id="publications" class="section section-alt">
+  <div class="container">
+    <h2 class="section-title">Publications</h2>
+    <p class="section-intro">
+      Selected recent work. For the full list see
+      <a href="https://pubmed.ncbi.nlm.nih.gov/" target="_blank" rel="noopener">PubMed</a>.
+      <span class="pub-count">({{ site.data.publications.publications | size }} publications)</span>
+    </p>
+
+    {% assign pubs_by_year = site.data.publications.publications | group_by: "year" | sort: "name" | reverse %}
+
+    <div class="pub-list">
+      {% for year_group in pubs_by_year %}
+        <div class="pub-year-group">
+          <h3 class="pub-year-heading">{{ year_group.name }}</h3>
+          {% for pub in year_group.items %}
+          <div class="pub-item">
+            <div class="pub-details">
+              <p class="pub-title">{{ pub.title }}</p>
+              <p class="pub-authors">{{ pub.authors }}</p>
+              <p class="pub-journal">
+                <em>{{ pub.journal }}</em>
+                {% if pub.volume_issue_pages %} {{ pub.volume_issue_pages }}{% endif %}
+                {% if pub.doi %}
+                  · <a href="https://doi.org/{{ pub.doi }}" target="_blank" rel="noopener">DOI</a>
+                {% endif %}
+                · <a href="{{ pub.pubmed_url }}" target="_blank" rel="noopener">PubMed</a>
+              </p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+
+    {{ content }}
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="section">
+  <div class="container contact-grid">
+    <div>
+      <h2 class="section-title">Contact</h2>
+      <p>We welcome collaborations, inquiries from prospective students, and questions about our tools and datasets.</p>
+      <ul class="contact-list">
+        <li>
+          <span class="contact-label">Institution</span>
+          <span>{{ site.institution }}<br/>{{ site.location }}</span>
+        </li>
+        <li>
+          <span class="contact-label">Email</span>
+          <span><a href="mailto:{{ site.contact_email }}">{{ site.contact_email }}</a></span>
+        </li>
+        <li>
+          <span class="contact-label">GitHub</span>
+          <span><a href="{{ site.github }}" target="_blank" rel="noopener">{{ site.github | remove: "https://" }}</a></span>
+        </li>
+      </ul>
+    </div>
+    <div class="map-placeholder">
+      <p>📍 Genova, Liguria<br/>Italy</p>
+    </div>
+  </div>
+</section>

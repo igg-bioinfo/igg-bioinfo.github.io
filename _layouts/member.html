@@ -1,0 +1,92 @@
+---
+layout: default
+---
+
+<div class="page-hero page-hero--member">
+  <div class="container">
+    <a href="{{ '/#team' | relative_url }}" class="back-link">← Team</a>
+    <div class="member-profile">
+      <div class="member-profile__avatar">
+        {% if page.avatar %}
+          <img src="{{ page.avatar | relative_url }}" alt="{{ page.name }}" />
+        {% else %}
+          <span>{{ page.name | split: " " | map: "first" | join: "" | slice: 0 }}{{ page.name | split: " " | last | slice: 0 }}</span>
+        {% endif %}
+      </div>
+      <div class="member-profile__info">
+        <h1>{{ page.name }}</h1>
+        <p class="member-role">{{ page.role }}</p>
+        {% if page.institution %}<p class="member-institution">{{ page.institution }}</p>{% endif %}
+        <div class="member-links">
+          {% if page.email %}<a href="mailto:{{ page.email }}">✉ Email</a>{% endif %}
+          {% if page.github %}<a href="{{ page.github }}" target="_blank" rel="noopener">⌥ GitHub</a>{% endif %}
+          {% if page.orcid %}<a href="https://orcid.org/{{ page.orcid }}" target="_blank" rel="noopener">◎ ORCID</a>{% endif %}
+          {% if page.scholar %}<a href="{{ page.scholar }}" target="_blank" rel="noopener">Scholar</a>{% endif %}
+          {% if page.twitter %}<a href="https://twitter.com/{{ page.twitter }}" target="_blank" rel="noopener">𝕏 {{ page.twitter }}</a>{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="container member-body">
+
+    <div class="member-main">
+      <div class="prose">
+        {{ content }}
+      </div>
+
+      {% if page.projects %}
+      <div class="member-section">
+        <h2>Projects</h2>
+        <ul class="ref-list">
+          {% for proj_slug in page.projects %}
+            {% assign proj = site.projects | where: "slug", proj_slug | first %}
+            {% if proj %}
+            <li><a href="{{ proj.url | relative_url }}">{{ proj.title }}</a></li>
+            {% else %}
+            <li>{{ proj_slug }}</li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      {% if page.publications %}
+      <div class="member-section">
+        <h2>Selected Publications</h2>
+        <ul class="pub-simple">
+          {% for pub in page.publications %}
+          <li>
+            <span class="pub-year-inline">{{ pub.year }}</span>
+            <span class="pub-title">{{ pub.title }}</span>
+            <span class="pub-journal"><em>{{ pub.journal }}</em>{% if pub.doi %} · <a href="https://doi.org/{{ pub.doi }}" target="_blank" rel="noopener">DOI</a>{% endif %}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+
+    <aside class="member-sidebar">
+      {% if page.interests %}
+      <div class="sidebar-block">
+        <h3>Interests</h3>
+        <ul>{% for i in page.interests %}<li>{{ i }}</li>{% endfor %}</ul>
+      </div>
+      {% endif %}
+      {% if page.education %}
+      <div class="sidebar-block">
+        <h3>Education</h3>
+        <ul>
+          {% for ed in page.education %}
+          <li><strong>{{ ed.degree }}</strong><br/>{{ ed.institution }}, {{ ed.year }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </aside>
+
+  </div>
+</div>

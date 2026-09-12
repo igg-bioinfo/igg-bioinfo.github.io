@@ -1,5 +1,45 @@
-title: IGG BioInfo
-description: Unità di Bioinformatica presso l'Isituto Gaslini
-show_downloads: false
-google_analytics:
-theme: jekyll-theme-cayman
+title: IGG Bioinfo Lab
+description: Bioinformatics, genomics, and epigenomics research at Istituto Giannina Gaslini, Genova.
+url: "https://igg-bioinfo.github.io"
+baseurl: ""
+
+# Institution
+institution: Istituto Giannina Gaslini
+location: Genova, Italy
+github: https://github.com/igg-bioinfo/
+contact_email: bioinfo@gaslini.org   # ← update this
+
+# Collections: members and projects are auto-discovered
+collections:
+  members:
+    output: true
+    permalink: /team/:name/
+  projects:
+    output: true
+    permalink: /projects/:name/
+
+# Default front matter for each collection
+defaults:
+  - scope:
+      path: ""
+      type: members
+    values:
+      layout: member
+  - scope:
+      path: ""
+      type: projects
+    values:
+      layout: project
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+plugins:
+  - jekyll-seo-tag
+
+# Exclude from build
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - "*.sh"

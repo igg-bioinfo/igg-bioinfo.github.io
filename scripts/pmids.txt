@@ -1,0 +1,22 @@
+# ── pmids.txt ────────────────────────────────────────────────────────────────
+# One PubMed ID (PMID) per line.
+# Lines starting with # are comments and are ignored.
+# Find a PMID on https://pubmed.ncbi.nlm.nih.gov/ — it is the number in the URL.
+#
+# Example:
+#   https://pubmed.ncbi.nlm.nih.gov/38234567/ → PMID is 38234567
+#
+# After editing this file, run:
+#   python scripts/fetch_publications.py
+# then commit and push both pmids.txt and _data/publications.yml
+# ─────────────────────────────────────────────────────────────────────────────
+
+# === ADD YOUR PMIDs BELOW ===
+
+# 2024
+# 38234567
+# 38100001
+
+# 2023
+# 37500000
+# 37400000
