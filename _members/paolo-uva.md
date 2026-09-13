@@ -1,7 +1,7 @@
 ---
 # ── REQUIRED ──────────────────────────────────────────────────────────────────
-name: "First Last"
-role: "PhD Student"         # Principal Investigator | Postdoctoral Researcher |
+name: "Paolo Uva"
+role: "Team Leader"         # Principal Investigator | Postdoctoral Researcher |
                             # PhD Student | MSc Student | Research Associate |
                             # Software Engineer | Collaborator | Alumni
 order: 10                   # Controls display order in Team section (lower = first)
@@ -10,7 +10,7 @@ order: 10                   # Controls display order in Team section (lower = fi
 # How your name appears in PubMed author lists (e.g. "Rossi M").
 # Check on any of your papers: https://pubmed.ncbi.nlm.nih.gov/
 # If omitted, matching falls back to last-name only (less precise).
-pubmed_name: "Last F"
+pubmed_name: "Uva P"
 
 # ── PROJECT MATCHING ──────────────────────────────────────────────────────────
 # Slug of this file (filename without .md). Used by projects to tag members.

@@ -33,40 +33,80 @@ layout: default
   <div class="container member-body">
 
     <div class="member-main">
+
       <div class="prose">
         {{ content }}
       </div>
 
-      {% if page.projects %}
+      {% comment %}── Projects: auto-filtered by member slug ────────────────{% endcomment %}
+      {% assign member_slug = page.path | remove: "_members/" | remove: ".md" %}
+      {% assign member_projects = site.projects | where_exp: "p", "p.team contains member_slug" %}
+      {% if member_projects.size > 0 %}
       <div class="member-section">
-        <h2>Projects</h2>
-        <ul class="ref-list">
-          {% for proj_slug in page.projects %}
-            {% assign proj = site.projects | where: "slug", proj_slug | first %}
-            {% if proj %}
-            <li><a href="{{ proj.url | relative_url }}">{{ proj.title }}</a></li>
-            {% else %}
-            <li>{{ proj_slug }}</li>
-            {% endif %}
+        <h2>Projects <span class="pub-count">({{ member_projects.size }})</span></h2>
+        <div class="proj-grid proj-grid--compact">
+          {% for project in member_projects %}
+          <a class="project-card project-card--small" href="{{ project.url | relative_url }}">
+            <div class="project-header">
+              <span class="project-status project-status--{{ project.status | default: 'active' }}">
+                {{ project.status | default: "active" }}
+              </span>
+            </div>
+            <h3>{{ project.title }}</h3>
+            <p>{{ project.short_description | truncatewords: 18 }}</p>
+            <div class="project-tags">
+              {% for tag in project.tags limit: 3 %}<span>{{ tag }}</span>{% endfor %}
+            </div>
+          </a>
           {% endfor %}
-        </ul>
+        </div>
       </div>
       {% endif %}
 
-      {% if page.publications %}
-      <div class="member-section">
-        <h2>Selected Publications</h2>
-        <ul class="pub-simple">
-          {% for pub in page.publications %}
-          <li>
-            <span class="pub-year-inline">{{ pub.year }}</span>
-            <span class="pub-title">{{ pub.title }}</span>
-            <span class="pub-journal"><em>{{ pub.journal }}</em>{% if pub.doi %} · <a href="https://doi.org/{{ pub.doi }}" target="_blank" rel="noopener">DOI</a>{% endif %}</span>
-          </li>
+      {% comment %}── Publications: auto-filtered by pubmed_name or last name ─{% endcomment %}
+      {% assign member_pubs = "" | split: "" %}
+      {% for pub in site.data.publications.publications %}
+        {% assign matched = false %}
+        {% if page.pubmed_name %}
+          {% for aname in pub.author_names %}
+            {% if aname == page.pubmed_name %}{% assign matched = true %}{% break %}{% endif %}
           {% endfor %}
-        </ul>
+        {% endif %}
+        {% unless matched %}
+          {% assign last_name = page.name | split: " " | last %}
+          {% for aname in pub.author_names %}
+            {% if aname contains last_name %}{% assign matched = true %}{% break %}{% endif %}
+          {% endfor %}
+        {% endunless %}
+        {% if matched %}{% assign member_pubs = member_pubs | push: pub %}{% endif %}
+      {% endfor %}
+
+      {% if member_pubs.size > 0 %}
+      <div class="member-section">
+        <h2>Publications <span class="pub-count">({{ member_pubs.size }})</span></h2>
+        {% assign pubs_by_year = member_pubs | group_by: "year" | sort: "name" | reverse %}
+        {% for year_group in pubs_by_year %}
+          <h3 class="pub-year-heading">{{ year_group.name }}</h3>
+          <div class="pub-list">
+            {% for pub in year_group.items %}
+            <div class="pub-item">
+              <div class="pub-details">
+                <p class="pub-title">{{ pub.title }}</p>
+                <p class="pub-authors">{{ pub.authors }}</p>
+                <p class="pub-journal">
+                  <em>{{ pub.journal }}</em>
+                  {% if pub.volume_issue_pages %} {{ pub.volume_issue_pages }}{% endif %}
+                  {% if pub.doi %} · <a href="https://doi.org/{{ pub.doi }}" target="_blank" rel="noopener">DOI</a>{% endif %}
+                  · <a href="{{ pub.pubmed_url }}" target="_blank" rel="noopener">PubMed</a>
+                </p>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        {% endfor %}
       </div>
       {% endif %}
+
     </div>
 
     <aside class="member-sidebar">

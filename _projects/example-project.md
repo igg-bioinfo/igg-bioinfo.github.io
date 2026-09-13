@@ -10,9 +10,11 @@ tags:
 github: "https://github.com/igg-bioinfo/example-pipeline"
 start_date: "2023"
 team:
-  - group-leader
+  - paolo-uva
 funding:
   - "Example grant"
+pmids:
+  - "32570423"
 ---
 
 ## Background

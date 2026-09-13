@@ -28,14 +28,28 @@ layout: default
     </div>
 
     <aside class="project-sidebar">
-      {% if page.team %}
+
+      {% comment %}── Team: auto-resolved from slugs in team: field ──────────{% endcomment %}
+      {% if page.team and page.team.size > 0 %}
       <div class="sidebar-block">
         <h3>Team</h3>
-        <ul>
+        <ul class="team-sidebar-list">
           {% for member_slug in page.team %}
-            {% assign member = site.members | where: "slug", member_slug | first %}
+            {% assign member = site.members | where_exp: "m", "m.path contains member_slug" | first %}
             {% if member %}
-            <li><a href="{{ member.url | relative_url }}">{{ member.name }}</a></li>
+            <a href="{{ member.url | relative_url }}" class="team-sidebar-member">
+              <div class="team-sidebar-avatar">
+                {% if member.avatar %}
+                  <img src="{{ member.avatar | relative_url }}" alt="{{ member.name }}" />
+                {% else %}
+                  {{ member.name | split: " " | map: "first" | join: "" | slice: 0 }}{{ member.name | split: " " | last | slice: 0 }}
+                {% endif %}
+              </div>
+              <div>
+                <span class="team-sidebar-name">{{ member.name }}</span>
+                <span class="team-sidebar-role">{{ member.role }}</span>
+              </div>
+            </a>
             {% else %}
             <li>{{ member_slug }}</li>
             {% endif %}
@@ -58,19 +72,33 @@ layout: default
       </div>
       {% endif %}
 
-      {% if page.publications %}
-      <div class="sidebar-block">
-        <h3>Publications</h3>
-        <ul class="pub-simple">
-          {% for pub in page.publications %}
-          <li>
-            <span class="pub-title">{{ pub.title }}</span>
-            {% if pub.doi %}<a href="https://doi.org/{{ pub.doi }}" target="_blank" rel="noopener">DOI</a>{% endif %}
-          </li>
-          {% endfor %}
-        </ul>
-      </div>
+      {% comment %}── Publications: auto-filtered from _data/publications.yml ─{% endcomment %}
+      {% if page.pmids and page.pmids.size > 0 %}
+        {% assign project_pubs = "" | split: "" %}
+        {% for pub in site.data.publications.publications %}
+          {% if page.pmids contains pub.pmid %}
+            {% assign project_pubs = project_pubs | push: pub %}
+          {% endif %}
+        {% endfor %}
+        {% if project_pubs.size > 0 %}
+        <div class="sidebar-block">
+          <h3>Publications</h3>
+          <ul class="pub-simple">
+            {% for pub in project_pubs %}
+            <li>
+              <span class="pub-title">{{ pub.title }}</span>
+              <span class="pub-journal">
+                <em>{{ pub.journal }}</em>
+                {% if pub.doi %} · <a href="https://doi.org/{{ pub.doi }}" target="_blank" rel="noopener">DOI</a>{% endif %}
+                · <a href="{{ pub.pubmed_url }}" target="_blank" rel="noopener">PubMed</a>
+              </span>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
       {% endif %}
+
     </aside>
 
   </div>

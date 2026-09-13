@@ -1,44 +1,45 @@
 ---
-# ── REQUIRED ──────────────────────────────────────────────────────────────
+# ── REQUIRED ──────────────────────────────────────────────────────────────────
 title: "Project Title"
 status: "active"            # active | completed | on-hold
 
-# ── SHORT DESCRIPTION (shown on home page project card) ───────────────────
+# ── SHORT DESCRIPTION (shown on home page project card) ───────────────────────
 short_description: "One or two sentences summarising the project goal and approach."
 
-# ── TAGS (shown as pills on cards and project page) ───────────────────────
+# ── TAGS ──────────────────────────────────────────────────────────────────────
 tags:
   - genomics
   - variant-calling
   - rare-diseases
 
-# ── LINKS ─────────────────────────────────────────────────────────────────
+# ── LINKS ─────────────────────────────────────────────────────────────────────
 github: "https://github.com/igg-bioinfo/project-repo"
 paper_doi: "10.0000/paper-doi"     # omit if no paper yet
 
-# ── DATES ─────────────────────────────────────────────────────────────────
+# ── DATES ─────────────────────────────────────────────────────────────────────
 start_date: "2023"
 end_date:                          # leave blank if ongoing
 
-# ── TEAM (slugs = filenames in _members/ without .md) ─────────────────────
+# ── TEAM ──────────────────────────────────────────────────────────────────────
+# Slugs = filenames in _members/ without the .md extension.
+# Member pages will automatically list this project.
 team:
-  - group-leader
-  - another-member-slug
+  - first-last                     # e.g. mario-rossi for _members/mario-rossi.md
+  - another-member
 
-# ── FUNDING ───────────────────────────────────────────────────────────────
+# ── FUNDING ───────────────────────────────────────────────────────────────────
 funding:
   - "Grant name / number"
-  - "Institution or EU project"
 
-# ── PUBLICATIONS ──────────────────────────────────────────────────────────
-publications:
-  - title: "Paper title"
-    journal: "Journal Name"
-    year: 2024
-    doi: "10.0000/example"
+# ── PUBLICATIONS ──────────────────────────────────────────────────────────────
+# PMIDs of papers linked to this project (must also be in scripts/pmids.txt).
+# Metadata is pulled automatically from _data/publications.yml.
+pmids:
+  - "38234567"
+  - "37500000"
 ---
 
-<!-- Full project description — Markdown, shown only on the project page -->
+<!-- Full project description — Markdown, shown on the project page only -->
 
 ## Background
 
@@ -54,4 +55,4 @@ List key tools, datasets, or software developed.
 
 ## Results
 
-Summarise main findings or outputs (datasets, software, publications).
+Summarise main findings or outputs.

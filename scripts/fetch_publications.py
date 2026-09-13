@@ -6,6 +6,9 @@ Reads PMIDs from scripts/pmids.txt, fetches metadata from the NCBI
 PubMed API (no API key needed for small requests), and writes
 _data/publications.yml for Jekyll to render.
 
+Each publication entry includes an `author_names` list so that
+member pages can filter publications by author name or ORCID.
+
 Usage (from the repo root):
     python scripts/fetch_publications.py
 
@@ -21,22 +24,20 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-# ── Paths ─────────────────────────────────────────────────────────────────────
-ROOT        = Path(__file__).parent.parent          # repo root
+# ── Paths ──────────────────────────────────────────────────────────────────
+ROOT        = Path(__file__).parent.parent
 PMIDS_FILE  = Path(__file__).parent / "pmids.txt"
 OUTPUT_FILE = ROOT / "_data" / "publications.yml"
 
-# ── NCBI E-utilities ──────────────────────────────────────────────────────────
+# ── NCBI E-utilities ───────────────────────────────────────────────────────
 ESUMMARY_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
-EFETCH_URL   = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
-BATCH_SIZE   = 20        # NCBI recommends ≤20 IDs per request without an API key
-SLEEP_SEC    = 0.35      # be polite — NCBI rate limit is 3 req/s without a key
+BATCH_SIZE   = 20
+SLEEP_SEC    = 0.35
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# ── Helpers ────────────────────────────────────────────────────────────────
 
-def read_pmids(path: Path) -> list[str]:
-    """Return a de-duplicated, ordered list of PMIDs from a text file."""
+def read_pmids(path):
     pmids, seen = [], set()
     for line in path.read_text().splitlines():
         line = line.strip()
@@ -51,8 +52,7 @@ def read_pmids(path: Path) -> list[str]:
     return pmids
 
 
-def fetch_summaries(pmids: list[str]) -> dict:
-    """Fetch ESummary JSON for a list of PMIDs in batches."""
+def fetch_summaries(pmids):
     results = {}
     for i in range(0, len(pmids), BATCH_SIZE):
         batch = pmids[i : i + BATCH_SIZE]
@@ -60,12 +60,11 @@ def fetch_summaries(pmids: list[str]) -> dict:
             "db":      "pubmed",
             "id":      ",".join(batch),
             "retmode": "json",
-            "rettype": "abstract",
             "tool":    "igg-bioinfo-jekyll",
             "email":   "bioinfo@gaslini.org",
         })
         url = f"{ESUMMARY_URL}?{params}"
-        print(f"  Fetching batch {i//BATCH_SIZE + 1}: PMIDs {batch[0]}…{batch[-1]}")
+        print(f"  Fetching batch {i//BATCH_SIZE + 1}: PMIDs {batch[0]}...{batch[-1]}")
         try:
             with urllib.request.urlopen(url, timeout=15) as resp:
                 data = json.loads(resp.read())
@@ -77,27 +76,22 @@ def fetch_summaries(pmids: list[str]) -> dict:
     return results
 
 
-def parse_authors(author_list: list) -> str:
-    """Return 'Last A, Last B, ...' formatted author string."""
-    names = []
-    for a in author_list:
-        name = a.get("name", "")
-        if name:
-            names.append(name)
-    if not names:
-        return ""
-    if len(names) > 6:
-        return ", ".join(names[:6]) + ", et al."
-    return ", ".join(names)
+def parse_authors(author_list):
+    """Return (display_string, full_name_list).
+
+    display_string  — truncated to 6 authors + 'et al.'
+    full_name_list  — every author name, used for per-member filtering.
+    """
+    names = [a.get("name", "") for a in author_list if a.get("name")]
+    display = ", ".join(names[:6]) + (", et al." if len(names) > 6 else "")
+    return display, names
 
 
-def parse_journal(summary: dict) -> str:
-    """Return a clean journal name (prefer ISOAbbreviation, fallback to Source)."""
+def parse_journal(summary):
     return summary.get("source", "")
 
 
-def parse_volume_issue_pages(summary: dict) -> str:
-    """Return 'vol(issue):pages' string, omitting missing parts."""
+def parse_volume_issue_pages(summary):
     vol   = summary.get("volume", "")
     issue = summary.get("issue", "")
     pages = summary.get("pages", "")
@@ -109,29 +103,26 @@ def parse_volume_issue_pages(summary: dict) -> str:
     return "".join(parts)
 
 
-def parse_doi(summary: dict) -> str:
-    """Extract DOI from articleids list."""
+def parse_doi(summary):
     for aid in summary.get("articleids", []):
         if aid.get("idtype") == "doi":
             return aid.get("value", "")
     return ""
 
 
-def parse_year(summary: dict) -> str:
-    """Extract 4-digit publication year."""
+def parse_year(summary):
     pub_date = summary.get("pubdate", "")
     if pub_date:
         return pub_date[:4]
     return summary.get("epubdate", "")[:4]
 
 
-def yaml_str(s: str) -> str:
-    """Wrap a string in double quotes and escape internal quotes for YAML."""
-    return '"' + s.replace('"', '\\"') + '"'
+def qs(s):
+    """Quote a string for YAML."""
+    return '"' + s.replace('\\', '\\\\').replace('"', '\\"') + '"'
 
 
-def build_yaml(pmids: list[str], summaries: dict) -> str:
-    """Build the YAML string for _data/publications.yml."""
+def build_yaml(pmids, summaries):
     lines = [
         "# Auto-generated by scripts/fetch_publications.py — do not edit by hand.",
         "# To update: edit scripts/pmids.txt then run the script again.",
@@ -139,7 +130,6 @@ def build_yaml(pmids: list[str], summaries: dict) -> str:
         "publications:",
     ]
 
-    # Sort by year descending, preserving PMID order within same year
     def sort_key(pmid):
         s = summaries.get(pmid, {})
         return -int(parse_year(s) or 0)
@@ -150,35 +140,39 @@ def build_yaml(pmids: list[str], summaries: dict) -> str:
             print(f"  [warn] PMID {pmid} not found in PubMed — skipping.", file=sys.stderr)
             continue
 
-        title   = s.get("title", "").rstrip(".")
-        authors = parse_authors(s.get("authors", []))
-        journal = parse_journal(s)
-        voliss  = parse_volume_issue_pages(s)
-        doi     = parse_doi(s)
-        year    = parse_year(s)
-        pmid_id = s.get("uid", pmid)
+        title              = s.get("title", "").rstrip(".")
+        authors_display, authors_list = parse_authors(s.get("authors", []))
+        journal            = parse_journal(s)
+        voliss             = parse_volume_issue_pages(s)
+        doi                = parse_doi(s)
+        year               = parse_year(s)
+        pmid_id            = s.get("uid", pmid)
 
         lines += [
-            f"  - pmid: {yaml_str(pmid_id)}",
-            f"    title: {yaml_str(title)}",
-            f"    authors: {yaml_str(authors)}",
-            f"    journal: {yaml_str(journal)}",
+            f"  - pmid: {qs(pmid_id)}",
+            f"    title: {qs(title)}",
+            f"    authors: {qs(authors_display)}",
         ]
+
+        # author_names: full list for member-page filtering
+        lines.append("    author_names:")
+        for name in authors_list:
+            lines.append(f"      - {qs(name)}")
+
+        lines.append(f"    journal: {qs(journal)}")
         if voliss:
-            lines.append(f"    volume_issue_pages: {yaml_str(voliss)}")
+            lines.append(f"    volume_issue_pages: {qs(voliss)}")
         if year:
-            lines.append(f"    year: {yaml_str(year)}")
+            lines.append(f"    year: {qs(year)}")
         if doi:
-            lines.append(f"    doi: {yaml_str(doi)}")
-        lines.append(
-            f"    pubmed_url: \"https://pubmed.ncbi.nlm.nih.gov/{pmid_id}/\""
-        )
+            lines.append(f"    doi: {qs(doi)}")
+        lines.append(f"    pubmed_url: \"https://pubmed.ncbi.nlm.nih.gov/{pmid_id}/\"")
         lines.append("")
 
     return "\n".join(lines)
 
 
-# ── Main ──────────────────────────────────────────────────────────────────────
+# ── Main ───────────────────────────────────────────────────────────────────
 
 def main():
     print("=== IGG Bioinfo Lab — PubMed publication fetcher ===\n")
@@ -195,7 +189,6 @@ def main():
     print(f"Found {len(pmids)} PMID(s) to fetch.\n")
 
     summaries = fetch_summaries(pmids)
-    # Remove the 'uids' key that NCBI adds
     summaries.pop("uids", None)
 
     yaml_content = build_yaml(pmids, summaries)
@@ -203,7 +196,7 @@ def main():
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_FILE.write_text(yaml_content, encoding="utf-8")
 
-    print(f"\n✓ Written to {OUTPUT_FILE.relative_to(ROOT)}")
+    print(f"\n Written to {OUTPUT_FILE.relative_to(ROOT)}")
     print("  Commit both scripts/pmids.txt and _data/publications.yml.")
 
 
